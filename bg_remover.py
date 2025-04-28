@@ -1,6 +1,7 @@
 #Remove_Bg python script BY StaNLink Dev Team
 import telegram
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.ext import Updater, CommandHandler, MessageHandler
+from telegram.ext.filters import PHOTO
 from rembg import remove
 from io import BytesIO
 import os
@@ -45,7 +46,7 @@ def main():
 
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help_command))
-    dp.add_handler(MessageHandler(Filters.photo, remove_background))
+    dp.add_handler(MessageHandler(PHOTO, remove_background))
     dp.add_handler(CommandHandler("about", about))
 
     updater.start_polling()
@@ -53,3 +54,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    
