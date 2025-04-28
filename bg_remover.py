@@ -1,40 +1,55 @@
 #Remove_Bg python script BY StaNLink Dev Team
-from telegram import Update
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+import telegram
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from rembg import remove
-from PIL import Image
-import io 
+from io import BytesIO
+import os
 
-TOKEN = "7324338784:AAG6uFqCirGL0r_gf01SIDCXYdQWCf2icqw"
+# Replace 'YOUR_BOT_TOKEN' with your actual bot token
+TOKEN = '7324338784:AAG6uFqCirGL0r_gf01SIDCXYdQWCf2icqw'
 
-def start(update: Update, context: CallbackContext):
-    update.message.reply_text("🎨Send me an emoji and I'll remove it's background for you!")
+def start(update, context):
+    user = update.message.from_user
+    update.message.reply_text(f"Welcome, {user.first_name}! Send me an image to remove its background.")
 
-def remove_bg(update: Update, context: CallbackContext):
-    photo = update.message.photo[-1]
-    file = context.bot.get_file(photo.file_id)
-    img_bytes = io.BytesIO(file.download_as_bytearray())
+def help_command(update, context):
+    update.message.reply_text("Here's how to use me:\n\n"
+                              "/start - Start the bot\n"
+                              "/help - Get these instructions\n"
+                              "Send an image - I'll remove the background for you.\n"
+                              "/about - Learn more about me.")
 
-    #process image with rembg
-    input_img = Image.open(img_bytes)
-    output_img = remove(input_img)
+def remove_background(update, context):
+    user = update.message.from_user
+    update.message.reply_text(f"Processing your image, {user.first_name}...")
+    try:
+        photo_file = context.bot.get_file(update.message.photo[-1].file_id)
+        photo_bytes = photo_file.download_as_bytearray()
 
-    #send the processed image back to the user
-    bio = io.BytesIO()
-    output_img.save(bio, format="PNG")
-    bio.seek(0)
+        # Remove background
+        output_bytes = remove(photo_bytes)
 
-    update.message.reply_photo(photo=bio, caption="✅Background removed by StaNLink engine!")
+        # Send the processed image
+        context.bot.send_photo(chat_id=update.message.chat_id, photo=BytesIO(output_bytes))
+        update.message.reply_text("Background removed!")
+
+    except Exception as e:
+        update.message.reply_text(f"Sorry, there was an error processing your image: {e}")
+
+def about(update, context):
+    update.message.reply_text("I am Bg_RemoverBot, created to instantly remove backgrounds from your images. Just send me a picture, and I'll take care of the rest!")
 
 def main():
     updater = Updater(TOKEN, use_context=True)
     dp = updater.dispatcher
 
     dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(MessageHandler(Filters.photo, remove_bg))
+    dp.add_handler(CommandHandler("help", help_command))
+    dp.add_handler(MessageHandler(Filters.photo, remove_background))
+    dp.add_handler(CommandHandler("about", about))
 
     updater.start_polling()
     updater.idle()
 
-if __main__ == "__main__":
+if __name__ == '__main__':
     main()
