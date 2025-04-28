@@ -5,7 +5,7 @@ from rembg import remove
 from PIL import Image
 import io 
 
-TOKEN = "StaNLink-API-TOKEN"
+TOKEN = "7324338784:AAEVX8mPFkd4G8tsYTLUqtl-EdrofFDP02g"
 
 def start(update: Update, context: CallbackContext):
     update.message.reply_text("🎨Send me an emoji and I'll remove it's background for you!")
